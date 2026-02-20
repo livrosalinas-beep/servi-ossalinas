@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import type { User, Provider } from '../../types';
-import { supabase } from '../../services/supabase';
 import Header from '../Header';
 import ServiceCard from '../ServiceCard';
 import BottomNav from '../BottomNav';
