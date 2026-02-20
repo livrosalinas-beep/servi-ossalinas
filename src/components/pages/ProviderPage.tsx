@@ -41,6 +41,10 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
     setMessage('');
 
     try {
+      if (!supabase) {
+        throw new Error('Serviço não disponível');
+      }
+
       const { error } = await supabase.from('providers').insert([
         {
           user_id: user.id,
@@ -63,6 +67,7 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
         onNavigate('home');
       }, 2000);
     } catch (error: any) {
+      console.error('Provider submit error:', error);
       setMessage('Erro: ' + (error.message || 'Erro ao cadastrar serviço'));
     } finally {
       setLoading(false);

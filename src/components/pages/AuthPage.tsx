@@ -24,6 +24,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
     setError('');
 
     try {
+      if (!supabase) {
+        throw new Error('Serviço não disponível');
+      }
+
       const { error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -34,6 +38,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
       setSuccess('Login realizado com sucesso!');
       setTimeout(onSuccess, 1500);
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.message || 'Erro ao fazer login');
     } finally {
       setLoading(false);
@@ -46,6 +51,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
     setError('');
 
     try {
+      if (!supabase) {
+        throw new Error('Serviço não disponível');
+      }
+
       const { error: registerError } = await supabase.auth.signUp({
         email,
         password,
@@ -63,6 +72,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
       setSuccess('Cadastro realizado! Verifique seu email.');
       setTimeout(() => setMode('login'), 2000);
     } catch (err: any) {
+      console.error('Register error:', err);
       setError(err.message || 'Erro ao cadastrar');
     } finally {
       setLoading(false);

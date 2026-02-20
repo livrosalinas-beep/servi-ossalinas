@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { supabase } from './services/supabase';
 import { User, AuthSession } from './types';
-import './styles/index.css';
 import './App.css';
 
 // Componentes
@@ -18,22 +17,24 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Verificar se existe usuário logado
     const checkAuth = async () => {
       try {
+        console.log('Iniciando verificação de autenticação...');
+        
         if (!supabase) {
-          throw new Error('Supabase não configurado');
+          console.warn('Supabase não está inicializado');
+          setLoading(false);
+          return;
         }
 
         const { data, error: authError } = await supabase.auth.getSession();
         
         if (authError) {
           console.warn('Aviso de autenticação:', authError);
-          setLoading(false);
-          return;
         }
 
         if (data?.session?.user) {
+          console.log('Usuário encontrado:', data.session.user.email);
           setAuth({
             user: {
               id: data.session.user.id,
@@ -46,6 +47,7 @@ function App() {
             token: data.session.access_token,
           });
         }
+        
         setLoading(false);
       } catch (err) {
         console.error('Erro ao verificar autenticação:', err);
@@ -58,7 +60,9 @@ function App() {
 
     // Subscribe to auth changes
     try {
-      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event);
+        
         if (session?.user) {
           setAuth({
             user: {
@@ -104,9 +108,9 @@ function App() {
         <div style={{ textAlign: 'center', padding: '40px 20px', color: 'red' }}>
           <h2>⚠️ Erro</h2>
           <p>{error}</p>
-          <p style={{ fontSize: '12px', marginTop: '20px', color: '#666' }}>
-            Verifique se as variáveis de ambiente estão configuradas corretamente em .env.local
-          </p>
+          <button onClick={() => window.location.reload()} style={{ marginTop: '20px', padding: '10px 20px' }}>
+            Recarregar
+          </button>
         </div>
       </Container>
     );
@@ -116,8 +120,16 @@ function App() {
     return (
       <Container>
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <div className="spinner"></div>
-          <p style={{ marginTop: '12px', color: 'var(--gray)' }}>Carregando...</p>
+          <div style={{ 
+            display: 'inline-block',
+            width: '30px',
+            height: '30px',
+            border: '3px solid rgba(0, 102, 204, 0.2)',
+            borderRadius: '50%',
+            borderTopColor: '#0066CC',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <p style={{ marginTop: '12px', color: '#6c757d' }}>Carregando...</p>
         </div>
       </Container>
     );
@@ -125,29 +137,31 @@ function App() {
 
   return (
     <Container>
-      {currentPage === 'home' && (
-        <HomePage
-          user={auth.user}
-          onNavigate={handlePageChange}
-          onLogout={handleLogout}
-        />
-      )}
-      {currentPage === 'auth' && (
-        <AuthPage onSuccess={() => setCurrentPage('home')} />
-      )}
-      {currentPage === 'provider' && (
-        <ProviderPage
-          user={auth.user}
-          onNavigate={handlePageChange}
-        />
-      )}
-      {currentPage === 'profile' && (
-        <ProfilePage
-          user={auth.user}
-          onNavigate={handlePageChange}
-          onLogout={handleLogout}
-        />
-      )}
+      <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Carregando página...</div>}>
+        {currentPage === 'home' && (
+          <HomePage
+            user={auth.user}
+            onNavigate={handlePageChange}
+            onLogout={handleLogout}
+          />
+        )}
+        {currentPage === 'auth' && (
+          <AuthPage onSuccess={() => setCurrentPage('home')} />
+        )}
+        {currentPage === 'provider' && (
+          <ProviderPage
+            user={auth.user}
+            onNavigate={handlePageChange}
+          />
+        )}
+        {currentPage === 'profile' && (
+          <ProfilePage
+            user={auth.user}
+            onNavigate={handlePageChange}
+            onLogout={handleLogout}
+          />
+        )}
+      </Suspense>
     </Container>
   );
 }

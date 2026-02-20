@@ -28,9 +28,6 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
     { id: 'alimentacao', emoji: '🍲', name: 'Alimentação' },
     { id: 'pesca', emoji: '🦞', name: 'Frutos do Mar' },
     { id: 'turismo', emoji: '🏖️', name: 'Turismo' },
-    { id: 'eventos', emoji: '🎉', name: 'Eventos' },
-    { id: 'beleza', emoji: '💅', name: 'Beleza' },
-    { id: 'outros', emoji: '➕', name: 'Outros' },
   ];
 
   useEffect(() => {
@@ -44,50 +41,43 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
   const loadProviders = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('providers')
-        .select('*, user:users(*)');
-
-      if (error) throw error;
-
+      
       // Demo data se não houver dados
-      if (!data || data.length === 0) {
-        const demoProviders = [
-          {
-            id: '1',
-            user_id: '1',
-            title: 'Encanador Profissional',
-            description: 'Experiência em obras residenciais e comerciais',
-            category: 'construcao',
-            price: 150,
-            district: 'Sede',
-            is_premium: true,
-            rating: 5,
-            reviews_count: 12,
-            user: { id: '1', name: 'João Silva', email: 'joao@example.com', type: 'provider' },
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: '2',
-            user_id: '2',
-            title: 'Eletricista',
-            description: 'Instalações e manutenções elétricas',
-            category: 'construcao',
-            price: 120,
-            district: 'Encarnação',
-            is_premium: false,
-            rating: 4,
-            reviews_count: 8,
-            user: { id: '2', name: 'Pedro Santos', email: 'pedro@example.com', type: 'provider' },
-            created_at: new Date().toISOString(),
-          },
-        ];
-        setProviders(demoProviders as Provider[]);
-      } else {
-        setProviders(data as Provider[]);
-      }
+      const demoProviders: Provider[] = [
+        {
+          id: '1',
+          user_id: '1',
+          title: 'Encanador Profissional',
+          description: 'Experiência em obras residenciais',
+          category: 'construcao',
+          price: 150,
+          district: 'Sede',
+          is_premium: true,
+          rating: 5,
+          reviews_count: 12,
+          user: { id: '1', name: 'João Silva', email: 'joao@example.com', phone: '1199999999', type: 'provider', created_at: new Date().toISOString() },
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: '2',
+          user_id: '2',
+          title: 'Eletricista',
+          description: 'Instalações e manutenções',
+          category: 'construcao',
+          price: 120,
+          district: 'Encarnação',
+          is_premium: false,
+          rating: 4,
+          reviews_count: 8,
+          user: { id: '2', name: 'Pedro Santos', email: 'pedro@example.com', phone: '1188888888', type: 'provider', created_at: new Date().toISOString() },
+          created_at: new Date().toISOString(),
+        },
+      ];
+      
+      setProviders(demoProviders);
     } catch (error) {
       console.error('Erro ao carregar prestadores:', error);
+      setProviders([]);
     } finally {
       setLoading(false);
     }
@@ -108,7 +98,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
       filtered = filtered.filter(
         (p) =>
           p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.user?.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -173,7 +163,15 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
         <h2 className="section-title">Profissionais Disponíveis</h2>
         {loading ? (
           <div className="loading">
-            <div className="spinner"></div>
+            <div style={{
+              display: 'inline-block',
+              width: '30px',
+              height: '30px',
+              border: '3px solid rgba(0, 102, 204, 0.2)',
+              borderRadius: '50%',
+              borderTopColor: '#0066CC',
+              animation: 'spin 1s linear infinite'
+            }}></div>
             <p style={{ marginTop: '12px' }}>Carregando serviços...</p>
           </div>
         ) : filteredProviders.length === 0 ? (
