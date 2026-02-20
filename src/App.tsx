@@ -15,30 +15,41 @@ function App() {
   const [auth, setAuth] = useState<AuthSession>({ user: null, token: null });
   const [currentPage, setCurrentPage] = useState<'home' | 'auth' | 'provider' | 'profile'>('home');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Verificar se existe usuário logado
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        if (!supabase) {
+          throw new Error('Supabase não configurado');
+        }
+
+        const { data, error: authError } = await supabase.auth.getSession();
         
-        if (session?.user) {
+        if (authError) {
+          console.warn('Aviso de autenticação:', authError);
+          setLoading(false);
+          return;
+        }
+
+        if (data?.session?.user) {
           setAuth({
             user: {
-              id: session.user.id,
-              email: session.user.email || '',
-              name: session.user.user_metadata?.name || '',
-              phone: session.user.user_metadata?.phone || '',
-              type: session.user.user_metadata?.type || 'client',
-              created_at: session.user.created_at,
+              id: data.session.user.id,
+              email: data.session.user.email || '',
+              name: data.session.user.user_metadata?.name || 'Usuário',
+              phone: data.session.user.user_metadata?.phone || '',
+              type: data.session.user.user_metadata?.type || 'client',
+              created_at: data.session.user.created_at,
             },
-            token: session.access_token,
+            token: data.session.access_token,
           });
-          setCurrentPage('home');
         }
-      } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
-      } finally {
+        setLoading(false);
+      } catch (err) {
+        console.error('Erro ao verificar autenticação:', err);
+        setError(err instanceof Error ? err.message : 'Erro desconhecido');
         setLoading(false);
       }
     };
@@ -46,14 +57,14 @@ function App() {
     checkAuth();
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    try {
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user) {
           setAuth({
             user: {
               id: session.user.id,
               email: session.user.email || '',
-              name: session.user.user_metadata?.name || '',
+              name: session.user.user_metadata?.name || 'Usuário',
               phone: session.user.user_metadata?.phone || '',
               type: session.user.user_metadata?.type || 'client',
               created_at: session.user.created_at,
@@ -63,23 +74,43 @@ function App() {
         } else {
           setAuth({ user: null, token: null });
         }
-      }
-    );
+      });
 
-    return () => {
-      subscription?.unsubscribe();
-    };
+      return () => {
+        data?.subscription?.unsubscribe();
+      };
+    } catch (err) {
+      console.error('Erro ao subscribir autenticação:', err);
+    }
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setAuth({ user: null, token: null });
-    setCurrentPage('home');
+    try {
+      await supabase.auth.signOut();
+      setAuth({ user: null, token: null });
+      setCurrentPage('home');
+    } catch (err) {
+      console.error('Erro ao fazer logout:', err);
+    }
   };
 
   const handlePageChange = (page: typeof currentPage) => {
     setCurrentPage(page);
   };
+
+  if (error) {
+    return (
+      <Container>
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: 'red' }}>
+          <h2>⚠️ Erro</h2>
+          <p>{error}</p>
+          <p style={{ fontSize: '12px', marginTop: '20px', color: '#666' }}>
+            Verifique se as variáveis de ambiente estão configuradas corretamente em .env.local
+          </p>
+        </div>
+      </Container>
+    );
+  }
 
   if (loading) {
     return (
