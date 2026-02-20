@@ -1,5 +1,5 @@
 import React from 'react';
-import { Provider } from '../types';
+import type { Provider } from '../types';
 import './ServiceCard.css';
 
 interface ServiceCardProps {

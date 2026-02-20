@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from '../../types';
+import type { User } from '../../types';
 import Header from '../Header';
 import BottomNav from '../BottomNav';
 import './ProfilePage.css';

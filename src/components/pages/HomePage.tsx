@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { User, Provider } from '../../types';
+import type { User, Provider } from '../../types';
 import { supabase } from '../../services/supabase';
 import Header from '../Header';
 import ServiceCard from '../ServiceCard';
@@ -41,7 +41,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
   const loadProviders = async () => {
     try {
       setLoading(true);
-      
+
       // Demo data se não houver dados
       const demoProviders: Provider[] = [
         {
@@ -73,7 +73,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
           created_at: new Date().toISOString(),
         },
       ];
-      
+
       setProviders(demoProviders);
     } catch (error) {
       console.error('Erro ao carregar prestadores:', error);

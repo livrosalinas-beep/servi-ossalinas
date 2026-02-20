@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User } from '../../types';
+import type { User } from '../../types';
 import { supabase } from '../../services/supabase';
 import Header from '../Header';
 import BottomNav from '../BottomNav';
@@ -179,7 +179,7 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
         currentPage="provider"
         user={user}
         onNavigate={onNavigate}
-        onLogout={() => {}}
+        onLogout={() => { }}
       />
     </div>
   );

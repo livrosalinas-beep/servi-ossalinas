@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { supabase } from '../../services/supabase';
-import Header from '../Header';
 import './AuthPage.css';
 
 interface AuthPageProps {
-  onSuccess: () => void;
+  onAuthSuccess: (user: any) => void;
+  onNavigate: (page: 'home' | 'auth' | 'provider' | 'profile') => void;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,9 +34,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
       });
 
       if (loginError) throw loginError;
-
-      setSuccess('Login realizado com sucesso!');
-      setTimeout(onSuccess, 1500);
+      if (data?.user) onAuthSuccess(data.user);
+      onNavigate('home');
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Erro ao fazer login');
@@ -68,9 +67,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
       });
 
       if (registerError) throw registerError;
-
-      setSuccess('Cadastro realizado! Verifique seu email.');
-      setTimeout(() => setMode('login'), 2000);
+      if (data?.user) onAuthSuccess(data.user);
+      onNavigate('home');
     } catch (err: any) {
       console.error('Register error:', err);
       setError(err.message || 'Erro ao cadastrar');
