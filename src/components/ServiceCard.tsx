@@ -6,9 +6,11 @@ interface ServiceCardProps {
   provider: Provider;
   onClick?: () => void;
   onContact?: () => void;
+  onDelete?: () => void;
+  isAdmin?: boolean;
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({ provider, onClick, onContact }) => {
+const ServiceCard: React.FC<ServiceCardProps> = ({ provider, onClick, onContact, onDelete, isAdmin }) => {
   const initials = (provider.user?.name || 'NA')
     .split(' ')
     .map((n) => n[0])
@@ -36,12 +38,22 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ provider, onClick, onContact 
           <div className="price">R$ {provider.price.toFixed(2)}</div>
           <div className="price-unit">por serviço</div>
         </div>
-        <button className="btn-contact" onClick={(e) => {
-          e.stopPropagation();
-          onContact?.();
-        }}>
-          Chamar
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {isAdmin && onDelete && (
+            <button className="btn-contact" style={{ backgroundColor: 'var(--danger)' }} onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}>
+              Excluir
+            </button>
+          )}
+          <button className="btn-contact" onClick={(e) => {
+            e.stopPropagation();
+            onContact?.();
+          }}>
+            Chamar
+          </button>
+        </div>
       </div>
     </div>
   );

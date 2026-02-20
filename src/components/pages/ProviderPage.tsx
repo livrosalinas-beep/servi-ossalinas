@@ -18,6 +18,7 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
   const [district, setDistrict] = useState('Sede');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
 
   const categories = [
     'construcao',
@@ -30,6 +31,10 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
     'beleza',
     'outros',
   ];
+
+  if (user?.type === 'admin') {
+    categories.push('Nova Categoria...');
+  }
 
   const districts = ['Sede', 'Encarnação', 'Dendê', 'Taperuçu', 'Guagipe'];
 
@@ -50,7 +55,7 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
           user_id: user.id,
           title,
           description,
-          category,
+          category: category === 'Nova Categoria...' ? customCategory.toLowerCase().replace(/ /g, '_') : category,
           price: parseFloat(price),
           district,
           is_premium: false,
@@ -66,9 +71,13 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
       setTimeout(() => {
         onNavigate('home');
       }, 2000);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Provider submit error:', error);
-      setMessage('Erro: ' + (error.message || 'Erro ao cadastrar serviço'));
+      if (error instanceof Error) {
+        setMessage('Erro: ' + (error.message || 'Erro ao cadastrar serviço'));
+      } else {
+        setMessage('Erro ao cadastrar serviço');
+      }
     } finally {
       setLoading(false);
     }
@@ -136,11 +145,24 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat}
+                  {cat === 'Nova Categoria...' ? cat : cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </option>
               ))}
             </select>
           </div>
+
+          {category === 'Nova Categoria...' && (
+            <div className="form-group">
+              <label>Nome da Nova Categoria</label>
+              <input
+                type="text"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="Ex: informatica"
+                required
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label>Preço (R$)</label>

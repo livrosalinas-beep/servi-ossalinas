@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { supabase } from '../../services/supabase';
 import Header from '../Header';
 import './AuthPage.css';
+import type { User } from '../../types';
 
 interface AuthPageProps {
-  onAuthSuccess: (user: any) => void;
+  onAuthSuccess: () => void;
   onNavigate: (page: 'home' | 'auth' | 'provider' | 'profile') => void;
 }
 
@@ -34,11 +35,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
       });
 
       if (loginError) throw loginError;
-      if (data?.user) onAuthSuccess(data.user);
+      if (data?.user) onAuthSuccess();
       onNavigate('home');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login error:', err);
-      setError(err.message || 'Erro ao fazer login');
+      if (err instanceof Error) {
+        setError(err.message || 'Erro ao fazer login');
+      } else {
+        setError('Erro ao fazer login');
+      }
     } finally {
       setLoading(false);
     }
@@ -67,11 +72,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
       });
 
       if (registerError) throw registerError;
-      if (data?.user) onAuthSuccess(data.user);
+      if (data?.user) onAuthSuccess();
       onNavigate('home');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Register error:', err);
-      setError(err.message || 'Erro ao cadastrar');
+      if (err instanceof Error) {
+        setError(err.message || 'Erro ao cadastrar');
+      } else {
+        setError('Erro ao cadastrar');
+      }
     } finally {
       setLoading(false);
     }
@@ -79,7 +88,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
 
   return (
     <div className="auth-page">
-      <Header logoText="🌊 ServiçosLocal" />
+      <Header logoText="⬅️ Voltar ao Início" onNavigate={onNavigate} />
 
       <div className="auth-container">
         <div className="auth-tabs">

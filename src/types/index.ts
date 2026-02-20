@@ -3,7 +3,7 @@ export interface User {
   email: string;
   name: string;
   phone?: string;
-  type: 'provider' | 'client';
+  type: 'provider' | 'client' | 'admin';
   created_at: string;
 }
 

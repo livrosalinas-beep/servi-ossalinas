@@ -35,7 +35,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
         }}
       >
         <span className="nav-icon">💼</span>
-        <span>Prestar</span>
+        <span>Oferecer</span>
       </button>
       <button
         className={`nav-item ${currentPage === 'profile' ? 'active' : ''}`}

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import type { User, Provider } from '../../types';
+import { supabase } from '../../services/supabase';
 import Header from '../Header';
 import ServiceCard from '../ServiceCard';
 import BottomNav from '../BottomNav';
@@ -29,60 +30,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
     { id: 'turismo', emoji: '🏖️', name: 'Turismo' },
   ];
 
-  useEffect(() => {
-    loadProviders();
-  }, []);
-
-  useEffect(() => {
-    filterProviders();
-  }, [providers, selectedDistrict, selectedCategory, searchQuery]);
-
-  const loadProviders = async () => {
-    try {
-      setLoading(true);
-
-      // Demo data se não houver dados
-      const demoProviders: Provider[] = [
-        {
-          id: '1',
-          user_id: '1',
-          title: 'Encanador Profissional',
-          description: 'Experiência em obras residenciais',
-          category: 'construcao',
-          price: 150,
-          district: 'Sede',
-          is_premium: true,
-          rating: 5,
-          reviews_count: 12,
-          user: { id: '1', name: 'João Silva', email: 'joao@example.com', phone: '1199999999', type: 'provider', created_at: new Date().toISOString() },
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          user_id: '2',
-          title: 'Eletricista',
-          description: 'Instalações e manutenções',
-          category: 'construcao',
-          price: 120,
-          district: 'Encarnação',
-          is_premium: false,
-          rating: 4,
-          reviews_count: 8,
-          user: { id: '2', name: 'Pedro Santos', email: 'pedro@example.com', phone: '1188888888', type: 'provider', created_at: new Date().toISOString() },
-          created_at: new Date().toISOString(),
-        },
-      ];
-
-      setProviders(demoProviders);
-    } catch (error) {
-      console.error('Erro ao carregar prestadores:', error);
-      setProviders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterProviders = () => {
+  const filterProviders = useCallback(() => {
     let filtered = providers;
 
     if (selectedDistrict !== 'Todos') {
@@ -103,7 +51,51 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
     }
 
     setFilteredProviders(filtered);
+  }, [providers, selectedDistrict, selectedCategory, searchQuery]);
+
+  useEffect(() => {
+    loadProviders();
+  }, []);
+
+  useEffect(() => {
+    filterProviders();
+  }, [filterProviders]);
+
+  const loadProviders = async () => {
+    try {
+      setLoading(true);
+      if (!supabase) return;
+
+      const { data, error } = await supabase
+        .from('providers')
+        .select('*, user:user_id(name, email, phone, type)');
+
+      if (error) {
+        throw error;
+      }
+
+      setProviders(data as Provider[] || []);
+    } catch (error) {
+      console.error('Erro ao carregar prestadores:', error);
+      setProviders([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este serviço?')) return;
+    try {
+      const { error } = await supabase.from('providers').delete().eq('id', id);
+      if (error) throw error;
+      loadProviders();
+    } catch (err) {
+      console.error('Erro ao deletar:', err);
+      alert('Não foi possível excluir o serviço.');
+    }
+  };
+
+
 
   const handleContact = (provider: Provider) => {
     const phone = provider.user?.phone || '';
@@ -186,6 +178,8 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
                 key={provider.id}
                 provider={provider}
                 onContact={() => handleContact(provider)}
+                onDelete={user?.type === 'admin' ? () => handleDelete(provider.id as string) : undefined}
+                isAdmin={user?.type === 'admin'}
               />
             ))}
           </div>

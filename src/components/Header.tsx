@@ -9,6 +9,7 @@ interface HeaderProps {
   showSearch?: boolean;
   onSearchChange?: (query: string) => void;
   searchPlaceholder?: string;
+  onNavigate?: (page: 'home' | 'auth' | 'provider' | 'profile') => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -18,11 +19,18 @@ const Header: React.FC<HeaderProps> = ({
   showSearch = false,
   onSearchChange,
   searchPlaceholder = 'Buscar serviços...',
+  onNavigate,
 }) => {
   return (
     <header className="header">
       <div className="header-top">
-        <div className="logo">{logoText}</div>
+        <div
+          className="logo"
+          onClick={() => onNavigate?.('home')}
+          style={{ cursor: onNavigate ? 'pointer' : 'default' }}
+        >
+          {logoText}
+        </div>
         <div className="user-badge" onClick={onUserClick}>
           {user ? `👤 ${user.name.split(' ')[0]}` : '👤 Entrar'}
         </div>
