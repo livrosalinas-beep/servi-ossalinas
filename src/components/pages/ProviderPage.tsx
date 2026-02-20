@@ -36,7 +36,7 @@ const ProviderPage: React.FC<ProviderPageProps> = ({ user, onNavigate }) => {
     categories.push('Nova Categoria...');
   }
 
-  const districts = ['Sede', 'Encarnação', 'Dendê', 'Taperuçu', 'Guagipe'];
+  const districts = ['Sede', 'Encarnação', 'Dendê', 'Conceição', 'Cairu', 'Barra'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

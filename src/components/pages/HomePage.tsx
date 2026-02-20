@@ -20,7 +20,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, onNavigate, onLogout }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const districts = ['Todos', 'Sede', 'Encarnação', 'Dendê', 'Taperuçu', 'Guagipe'];
+  const districts = ['Todos', 'Sede', 'Encarnação', 'Dendê', 'Conceição', 'Cairu', 'Barra'];
   const categories = [
     { id: 'construcao', emoji: '🔨', name: 'Construção' },
     { id: 'transporte', emoji: '🚤', name: 'Transporte' },
