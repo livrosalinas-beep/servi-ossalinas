@@ -14,77 +14,75 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const checkAuth = async () => {
-    try {
-      console.log('Verificando autenticação...');
+  useEffect(() => {
+    let mounted = true;
 
-      if (!supabase) {
-        console.error('Supabase não inicializado!');
-        setLoading(false);
-        return;
-      }
+    const initializeAuth = async () => {
+      try {
+        console.log('Verificando autenticação...');
 
-      const { data, error: authError } = await supabase.auth.getSession();
+        if (!supabase) {
+          if (mounted) setLoading(false);
+          return;
+        }
 
-      if (authError) {
-        console.error('Auth error:', authError);
-        setLoading(false);
-        return;
-      }
+        const { data, error: authError } = await supabase.auth.getSession();
 
-      if (data?.session?.user) {
-        console.log('✅ Usuário logado:', data.session.user.email);
-        setAuth({
-          user: {
-            id: data.session.user.id,
-            email: data.session.user.email || '',
-            name: data.session.user.user_metadata?.name || 'Usuário',
-            phone: data.session.user.user_metadata?.phone || '',
-            type: data.session.user.user_metadata?.type || 'client',
-            created_at: data.session.user.created_at,
-          },
-          token: data.session.access_token,
-        });
-      } else {
-        console.log('📭 Nenhum usuário logado');
-      }
+        if (authError) {
+          console.error('Auth error:', authError);
+          if (mounted) setLoading(false);
+          return;
+        }
 
-      setLoading(false);
-
-      // Subscribe to auth changes
-      const { data: authData } = supabase.auth.onAuthStateChange((_event, session) => {
-        console.log('🔔 Auth changed:', _event);
-
-        if (session?.user) {
+        if (data?.session?.user && mounted) {
           setAuth({
             user: {
-              id: session.user.id,
-              email: session.user.email || '',
-              name: session.user.user_metadata?.name || 'Usuário',
-              phone: session.user.user_metadata?.phone || '',
-              type: session.user.user_metadata?.type || 'client',
-              created_at: session.user.created_at,
+              id: data.session.user.id,
+              email: data.session.user.email || '',
+              name: data.session.user.user_metadata?.name || 'Usuário',
+              phone: data.session.user.user_metadata?.phone || '',
+              type: data.session.user.user_metadata?.type || 'client',
+              created_at: data.session.user.created_at,
             },
-            token: session.access_token,
+            token: data.session.access_token,
           });
-        } else {
-          setAuth({ user: null, token: null });
         }
-      });
 
-      return () => {
-        authData?.subscription?.unsubscribe();
-      };
-    } catch (err) {
-      console.error('❌ Erro:', err);
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      setLoading(false);
-    }
-  };
+        if (mounted) setLoading(false);
+      } catch (err) {
+        console.error('❌ Erro:', err);
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Erro desconhecido');
+          setLoading(false);
+        }
+      }
+    };
 
-  useEffect(() => {
-    console.log('App mounted, checking auth...');
-    checkAuth();
+    initializeAuth();
+
+    const { data: authData } = supabase?.auth?.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      if (session?.user) {
+        setAuth({
+          user: {
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || 'Usuário',
+            phone: session.user.user_metadata?.phone || '',
+            type: session.user.user_metadata?.type || 'client',
+            created_at: session.user.created_at,
+          },
+          token: session.access_token,
+        });
+      } else {
+        setAuth({ user: null, token: null });
+      }
+    }) ?? { data: { subscription: null } };
+
+    return () => {
+      mounted = false;
+      authData?.subscription?.unsubscribe();
+    };
   }, []);
 
 
