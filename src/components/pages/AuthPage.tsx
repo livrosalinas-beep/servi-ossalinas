@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../services/supabase';
+import Header from '../Header';
 import './AuthPage.css';
 
 interface AuthPageProps {
@@ -16,7 +17,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
   const [userType, setUserType] = useState<'client' | 'provider'>('client');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
         throw new Error('Serviço não disponível');
       }
 
-      const { error: loginError } = await supabase.auth.signInWithPassword({
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -54,7 +54,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
         throw new Error('Serviço não disponível');
       }
 
-      const { error: registerError } = await supabase.auth.signUp({
+      const { data, error: registerError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -98,7 +98,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onNavigate }) => {
         </div>
 
         {error && <div className="alert alert-error">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
 
         {mode === 'login' ? (
           <form onSubmit={handleLogin}>

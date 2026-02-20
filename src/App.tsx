@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './services/supabase';
-import type { User, AuthSession } from './types';
+import type { AuthSession } from './types';
 import Container from './components/Container';
 import HomePage from './components/pages/HomePage';
 import AuthPage from './components/pages/AuthPage';
@@ -13,11 +13,6 @@ function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'auth' | 'provider' | 'profile'>('home');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    console.log('App mounted, checking auth...');
-    checkAuth();
-  }, []);
 
   const checkAuth = async () => {
     try {
@@ -58,7 +53,7 @@ function App() {
 
       // Subscribe to auth changes
       const { data: authData } = supabase.auth.onAuthStateChange((_event, session) => {
-        console.log('🔔 Auth changed:', event);
+        console.log('🔔 Auth changed:', _event);
 
         if (session?.user) {
           setAuth({
@@ -86,6 +81,12 @@ function App() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    console.log('App mounted, checking auth...');
+    checkAuth();
+  }, []);
+
 
   const handleLogout = async () => {
     try {
@@ -140,7 +141,7 @@ function App() {
         />
       )}
       {currentPage === 'auth' && (
-        <AuthPage onSuccess={() => setCurrentPage('home')} />
+        <AuthPage onAuthSuccess={() => setCurrentPage('home')} onNavigate={setCurrentPage} />
       )}
       {currentPage === 'provider' && (
         <ProviderPage
